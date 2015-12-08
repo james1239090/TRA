@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+
+<head>
+    <title>台鐵列車查詢</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+    <!--     <link rel="stylesheet" href="docsupport/style.css"> -->
+    <link rel="stylesheet" type="text/css" href="css/chosen.css">
+    <link rel="stylesheet" type="text/css" href="datetimepicker-master/jquery.datetimepicker.css">
+    <style type="text/css">
+    .chosen-container {
+        width: 220px !important;
+    }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <em>起程站</em>
+                <br>
+                <select data-placeholder="請選擇" class="chosen-select" tabindex="1" id="trainFrom">
+                </select>
+            </div>
+            <div class="col-md-4">
+                <em>到達站</em>
+                <br>
+                <select data-placeholder="請選擇" class="chosen-select" tabindex="1" id="trainTo">
+                </select>
+            </div>
+            <div class="col-md-4">.col-md-4</div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <input id="datetimepicker123" class="datetimepicker" type="text">
+            </div>
+            <input id="datetimepicker456" class="datetimepicker" type="text">
+        </div>
+    </div>
+    <script src="js/jquery-1.11.3.min.js"></script>
+    <script src="js/chosen.jquery.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/lokiJS/lokijs.js"></script>
+    <script src="js/jsonpath.js"></script>
+    <script src="js/jinqjs.min.js"></script>
+    <script src="datetimepicker-master/build/jquery.datetimepicker.full.min.js"></script>
+    <script type="text/javascript">
+
+    $(document).ready(function(){
+
+        //datetimepicker 效果
+        jQuery('.datetimepicker').datetimepicker({
+            format: 'Y-m-d H:i',
+        });
+        $.datetimepicker.setLocale('zh-TW');
+        //轉換成 chosen 效果
+        $(".chosen-select").chosen({
+            no_results_text: "沒有符合的站名"
+        });
+
+
+        $.ajax({
+            url: "ajax/station.json",
+            type: "GET",
+            dataType: "json",
+            success: function(dataSet) {
+                var items = [];
+                items.push("<option value=\"\"></option>");
+                for (var i = 0; i < dataSet.data.length; i++) {
+                    items.push("<optgroup label=" + dataSet.data[i].city + ">");
+                    for (var j = 0; j < dataSet.data[i].stations.length; j++) {
+                        items.push("<option value=\"" + dataSet.data[i].stations[j].id + "\">" + dataSet.data[i].stations[j].name + "( " + dataSet.data[i].stations[j].id + " )" + "</option>");
+                    }
+                    items.push("</optgroup>");
+                }
+                $("#trainFrom").append(items.join("")).trigger("chosen:updated");
+                $("#trainTo").append(items.join("")).trigger("chosen:updated");
+            },
+            error: function() {
+                alert("ERROR!!!");
+            }
+        });
+
+
+
+        $.ajax({
+            url: "ajax/station.json",
+            type: "GET",
+            dataType: "json",
+            success: function(dataSet) {
+                var result = new jinqJs()
+                    .from(dataSet.data)
+                    .where(function(row) {
+                        return (row.city == '桃園地區');
+                    })
+                    .select('city', 'engCity', 'stations');
+                console.log(result);
+
+            },
+            error: function() {
+                alert("ERROR!!!");
+            }
+        });
+    });
+    </script>
+</body>
+
+</html>
